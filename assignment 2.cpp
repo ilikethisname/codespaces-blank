@@ -1,3 +1,14 @@
+/*
+things that havent been done
+-----------------------------
+error checking for the registration 
+seat reservation (seating plan display is done)
+contents of the user and admin menu
+the loading bar... isnt perfect
+by ree
+*/
+
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -10,7 +21,7 @@
 using namespace std;
 
 const int ROWS = 10;
-const int COLUMNS = 10;
+const int COLUMNS = 17;
 
 //admin username and password
 const string username = "admin";
@@ -30,6 +41,7 @@ void displayloginmenu();
 bool loginUser();
 bool adminLogin();
 void displayadminmenu();
+void displayseats();
 
 //loading bar
 void showLoadingBar(int duration, int delay) {
@@ -54,6 +66,46 @@ void showLoadingBar(int duration, int delay) {
 
 	cout << "\b\b\b"; // Move cursor back
 	cout << "] 100% Done!" << std::endl;
+}
+
+void displayseats() {
+
+
+	//seating plan benner
+	cout << "\t\t\t\t                       __                 __             __   _             " << endl;
+	cout << "\t\t\t\t   _____ ___   ____ _ / /_   _____ ___   / /___   _____ / /_ (_)____   ____ " << endl;
+	cout << "\t\t\t\t  / ___// _ \\ / __ `// __/  / ___// _ \\ / // _ \\ / ___// __// // __ \\ / __ \\" << endl;
+	cout << "\t\t\t\t (__  )/  __// /_/ // /_   (__  )/  __// //  __// /__ / /_ / // /_/ // / / /" << endl;
+	cout << "\t\t\t\t/____/ \\___/ \\__,_/ \\__/  /____/ \\___//_/ \\___/ \\___/ \\__//_/ \\____//_/ /_/ " << endl;
+
+	cout << "\n\n\t------------------------------------------------------------------------------------------------------------------ " << endl;
+	cout << "\t--------------------------------------------------[choose your seat]---------------------------------------------- " << endl;
+	cout << "\t------------------------------------------------------------------------------------------------------------------ " << endl;
+
+	char seats[ROWS][COLUMNS];
+
+	for (int i = 0; i < ROWS; i++) {
+		for (int j = 0; j < COLUMNS; j++) {
+			seats[i][j] = ' ';
+		}
+	}
+
+	char rowLabel = 'A';
+	for (int i = 0; i < ROWS; i++) {
+		cout << "\n\t\t\t\t\t";
+		for (int j = 1; j <= COLUMNS; j++) {
+			// Check if the seat is taken
+			if (seats[i][j - 1] == 'X') {
+				cout << "X ";
+			}
+			else {
+				cout << rowLabel << j << " ";
+			}
+		}
+		rowLabel++;
+		cout << endl;
+	}
+
 }
 
 //admin login
@@ -135,10 +187,6 @@ struct User {
 };
 
 vector<User> users;
-
-void displayseats() {
-	cout << "seating plan" << endl;
-}
 
 void displaymenu() {
 
@@ -226,7 +274,7 @@ void registerUser() {
 	file.close();
 
 	cout << "\n\n\t\t\t\t\t\t  Registration successful!" << endl;
-		cout << "\n\t\t\t\t\t  press any key to go back to main menu" << endl;
+	cout << "\n\t\t\t\t\t  press any key to go back to main menu" << endl;
 	cin.ignore();
 	//system("Pause");
 
@@ -347,7 +395,9 @@ void displayloginmenu() {
 		// option 1: View all movies
 		cout << "Viewing all movies..." << flush;
 		system("CLS");
-		//displayseats();
+		displayseats();
+		//cin << seat
+		//more will be here
 		break;
 	case 2:
 		// Handle option 2: Purchase tickets
@@ -423,9 +473,9 @@ int main() {
 		case '3':
 		{
 			char logout;
-			
-			if (!isLoggedIn) { 
-				cout << "\n\tYou're not logged in\n\tPress enter to go back to the main menu" << endl; 
+
+			if (!isLoggedIn) {
+				cout << "\n\tYou're not logged in\n\tPress enter to go back to the main menu" << endl;
 				cin.ignore();
 				cin.ignore();
 				displaymenu();
@@ -438,14 +488,14 @@ int main() {
 			cin >> logout;
 			if (logout == 'Y' || logout == 'y') {
 				isLoggedIn = false;
-				cout << "\n\tYou have successfully logged out of the system\n\tPress enter to go back to the main menu" << endl; 
+				cout << "\n\tYou have successfully logged out of the system\n\tPress enter to go back to the main menu" << endl;
 				cin.ignore();
 				cin.ignore();
 				displaymenu();
 
 			}
 			else {
-				cout << "\n\tYou're still logged in\n\tPress enter to go back to the main menu" << endl; 
+				cout << "\n\tYou're still logged in\n\tPress enter to go back to the main menu" << endl;
 				cin.ignore();
 				cin.ignore();
 			}
@@ -458,11 +508,11 @@ int main() {
 			int max_attempts = 3;
 			int attempts = 0;
 			bool login_successful = false;
-			
+
 			while (attempts < max_attempts && !login_successful) {
 				system("CLS");
 				if (adminLogin()) {
-					login_successful = true; 
+					login_successful = true;
 					displayadminmenu();
 
 					cout << "\n\t\t\t\t\t\tEnter your choice: ";
@@ -471,8 +521,8 @@ int main() {
 				else {
 					attempts++;
 					cout << "\n\t\t\t\t\t\tIncorrect login credentials. Attempts remaining: " << max_attempts - attempts << endl;
-					if (attempts<3){
-					cout << "\n\t\t\t\t\t\tPress any key to try again..." << endl;
+					if (attempts < 3) {
+						cout << "\n\t\t\t\t\t\tPress any key to try again..." << endl;
 					}
 					else {
 						cout << "\n\t\t\t\t\t\tYou have exceeded the maximum number of login attempts.\n\t\t\t\t\t\tredirecting to the main page...." << endl;
@@ -498,4 +548,7 @@ int main() {
 		}
 
 	} while (choice != 5);
+
+	system("Pause");
+	return 0;
 }
