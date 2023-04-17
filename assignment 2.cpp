@@ -1,5 +1,5 @@
 /*
-things that havent been done
+things that havent been done 
 -----------------------------
 error checking for the registration 
 seat reservation (seating plan display is done)
