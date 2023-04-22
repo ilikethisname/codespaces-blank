@@ -1,52 +1,27 @@
 /*
-    !!!Please don't share or copy to avoid plagiarism!!!
+ please don't share to or copy from friends even in the name of reference to avoid plagiarism. please it's serious.
+ 
+ 1) comment to label your parts for easier arranging later
+ 2) try to write down places you modify in other's part, it's really helpful when you need to insert everything again, saves time. for example,
+     changes done:
+      1) at end of ree's displayadminmenu() to match my admin update part
+      2) case 4: admin login there added my modules
+      3) changed admin choice from char type to int type
+
  */
 
 
-/*
-things that havent been done
------------------------------
-error checking for the registration
-seat reservation (seating plan display is done)
-contents of the user and admin menu
-the loading bar... isnt perfect
-by ree
-*/
 
-/*
- 1) sometimes the order of functions prototype matters
- 2) add in module one by one: please check and make sure the whole program runs as it should be at your stage before passing to another, debug for possible errors before passing to another, this is to make sure we can know where the program gone wrong at which module
- 3) i add system('cls') at my part after the whole program is complete
- 
- changes done:
- 1) at end of ree's displayadminmenu() to match my admin update part
- 2) case 4: admin login there added my modules
- 3) changed admin choice from char type to int type
- 
- by joseph
- */
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <string>
-#include <vector>
-#include <stdlib.h>
+
 //loading bar animation
 #include <chrono>
 #include <thread>
 using namespace std;
-
-// ree's part
-const int ROWS = 10;
-const int COLUMNS = 17;
-
-//admin username and password
-const string username = "admin";
-const string password = "password";
-
-const int duration = 5; // Total duration of the loading bar in seconds
-const int delay = 100; // Delay between progress updates in milliseconds
-
 
 
 // joseph's part: for admin update, display movie details, searching
@@ -56,13 +31,21 @@ struct Movie{
     string name,time,location;
 };
 
+//ree's part
+const int ROWS = 10;
+const int COLUMNS = 17;
 
+//admin username and password
+const string admin_username = "admin";
+const string admin_password = "password";
 
+//maximum user count (for struct)
+const int MAX_USERS = 60; // maximum number of users
+int numUsers = 0; // number of registered users
 
-//ree's part: functions prototypes
-void displaymenu();
+//functions prototypes
 void registerUser();
-void loadUsersFromFile();
+//void loadUsersFromFile();
 void showLoadingBar(int duration, int delay);
 void displayloginmenu();
 bool loginUser();
@@ -70,229 +53,108 @@ bool adminLogin();
 void displayadminmenu();
 void displayseats();
 
-//joseph's part: functions prototypes
-bool check_exist (string name, string moviesOS[]);
-int null_index(string moviesOS[]);
-void set_movieOS(Movie movies[], string moviesOS[]);
-bool compare(const Movie &a, const Movie &b);
-int check_index(Movie movies[]);
-int starting_index(Movie movies[]);
-void movie_details(string moviesOS[],Movie movies[]);
-void update(Movie movies[],string movieOS[]);
 
 
-
-//user login - struct
 struct User {
-    string name;
     string username;
     string password;
-    string phone_number;
-};
+} users[MAX_USERS]; //size of struct
 
-vector<User> users;
+void registerUser() {
 
 
-int main() {
-    
-    //joseph: read in movies.txt and arrange before anything else
-    Movie movies[Size] = {};
-    string moviesOS[Size] = {};
-    ifstream inMovies("movies.txt");
-    char dummy;
+    //register user banner
+    //cout << " \n\n\n\n\n\n\n\n\n" << endl;
+    cout << "\t              ( \\    " << endl;
+    cout << "\t   __         _)_\\_    " << endl;
+    cout << "\t  ' \\;---.-._S_____2_                               _        __    " << endl;
+    cout << "\t    /   / /_/       (______           _____ ___   ____ _ (_)_____ / /_ ___   _____" << endl;
+    cout << "\t __(  _;-'    =    =|____._'.__          / ___// _ \\ / __ `// // ___// __// _ \\ / ___/" << endl;
+    cout << "\t/   _/     _  @\\ _(@(      '--'.     / /   /  __// /_/ // /(__  )/ /_ /  __// /" << endl;
+    cout << "\t(_ /      /\\  _   =( ) ___     \\    /_/    \\___/ \\__, //_//____/ \\__/ \\___//_/" << endl;
+    cout << "\t  /      /\\ \\_ '.___'-.___~.    '\\           /____/   ____   ____  _      __" << endl;
+    cout << "\t /      /\\ \\__'--') '-.__c` \\    |                   / __ \\ / __ \\| | /| / /" << endl;
+    cout << "\t|     .'  )___'--'/  /`)     \\   /                   / / / // /_/ /| |/ |/ /" << endl;
+    cout << "\t|    |'-|    _|--'\\_(_/       '.'                  /_/ /_/ \\____/ |__/|__/" << endl;
+    cout << "\t|    |   \\_  -\\    " << endl;
+    cout << "\t\\   |     \\ /`)    " << endl;
+    cout << "\t  '._/       (_/     " << endl;
+    cout << "\n\t------------------------------------------------------------------------------------------------------------------ " << endl;
+    cout << "\t--------------------------------------------------[hello!]-------------------------------------------------------- " << endl;
+    cout << "\t------------------------------------------------------------------------------------------------------------------ " << endl;
+    cin.ignore();
 
-    //read in movies.txt
-    if (inMovies.is_open()){
-        int i = 0;
-        
-        while (!inMovies.eof()){
-            getline(inMovies,movies[i].name);
-            inMovies >> movies[i].time;
-            inMovies.ignore();
-            getline(inMovies,movies[i].location);
-            inMovies.ignore();
-            i++;
-        }
-        inMovies.close();
+    if (numUsers >= MAX_USERS) {
+        cout << "Error: maximum number of users reached" << endl;
+        return;
     }
-    else
-        cout << "Unable to open movies.txt!";
 
-    //sort the movies array ascendingly according to time
-    //display original movie table
-    sort(movies, movies + Size, compare);
-    movie_details(moviesOS, movies);
-    
-    
+    string username, password;
+    cout << "\t\t\t\t\tPlease enter a username\t\t: ";
+    getline(cin, username);
 
-    //ree: login
-    char choice;
-    int admin_choice;
-    loadUsersFromFile();
-    bool isLoggedIn = false;
-    bool validInput = false;
-    do {
-        system("CLS");
-        displaymenu();
-        cout << "\n\t\t\t\t\t\tenter your choice: ";
-        cin >> choice;
+    cout << "\t\t\t\t\tPlease enter a password\t\t: ";
+    getline(cin, password);
 
+    users[numUsers].username = username;
+    users[numUsers].password = password;
+    numUsers++;
 
-
-        switch (choice) {
-        case '1':
-            system("CLS");
-            registerUser();
-            break;
-        case '2':
-            if (!isLoggedIn) {
-                system("CLS");
-                isLoggedIn = loginUser();
-            }
-            else {
-                cout << "\n\tYou are already logged in" << endl;
-                cout << "\tRedirecting you to the user menu...\n" << endl;
-
-                showLoadingBar(duration, delay);
-
-                cin.ignore();
-                system("CLS");
-                displayloginmenu();
-
-            }
-            break;
-
-        case '3':
-        {
-            char logout;
-
-            if (!isLoggedIn) {
-                cout << "\n\tYou're not logged in\n\tPress enter to go back to the main menu" << endl;
-                cin.ignore();
-                cin.ignore();
-                displaymenu();
-                break;
-            }
-            cout << "\tLog out?" << endl;
-            cout << "\n\tPress 'Y' to logout" << endl;
-            cout << "\n\tPress any other key to go back to the main screen" << endl;
-            cout << "\t:";
-            cin >> logout;
-            if (logout == 'Y' || logout == 'y') {
-                isLoggedIn = false;
-                cout << "\n\tYou have successfully logged out of the system\n\tPress enter to go back to the main menu" << endl;
-                cin.ignore();
-                cin.ignore();
-                displaymenu();
-
-            }
-            else {
-                cout << "\n\tYou're still logged in\n\tPress enter to go back to the main menu" << endl;
-                cin.ignore();
-                cin.ignore();
-            }
-            break;
-        }
-
-        case '4':
-        {
-            ////admin login
-            int max_attempts = 3;
-            int attempts = 0;
-            bool login_successful = false;
-
-            while (attempts < max_attempts && !login_successful) {
-                system("CLS");
-                if (adminLogin()) {
-                    login_successful = true;
-                    displayadminmenu();
-                    cout << "\n\t\t\t\t\t\tEnter your choice: ";
-                    cin >> admin_choice;
-                    cout << endl << endl;
-                    
-                    while (admin_choice >= 1 && admin_choice <= 3){
-                        if (admin_choice == 1){
-                            //view movies
-                            movie_details(moviesOS, movies);
-                            cin.ignore();
-                        }
-                            
-                        else if (admin_choice == 2){
-                            
-                            //start of admin update menu
-                            update(movies,moviesOS);
-                            
-                            
-                            //update movies.txt
-                            ofstream outFile ("movies.txt", ios::out);
-                            
-                            for (int i = starting_index(movies); i < Size; i ++){
-                                outFile << movies[i].name << endl;
-                                outFile << movies[i].time << " " << movies[i].location << endl << endl;
-                            }
-                            
-                            outFile.close();
-        
-                            
-                            //Display updated movie table
-                            cout << "The new movie table:\n\n";
-                            movie_details(moviesOS, movies);
-                            cout << "Changes are successfully updated." << endl;
-                            
-                        }
-                        else if (admin_choice == 3)
-                            cout << "William, are you doing this part too?";
-                        
-                        
-                        cout << "\n\t\t\t\t\t  press any key to go back to admin update interface...";
-                        cin.ignore();
-                        displayadminmenu();
-                        cout << "\n\t\t\t\t\t\tEnter your choice: ";
-                        cin >> admin_choice;
-                        
-                    }
-                    
-
-                    
-                }
-                else {
-                    attempts++;
-                    cout << "\n\t\t\t\t\t\tIncorrect login credentials. Attempts remaining: " << max_attempts - attempts << endl;
-                    if (attempts < 3) {
-                        cout << "\n\t\t\t\t\t\tPress any key to try again..." << endl;
-                    }
-                    else {
-                        cout << "\n\t\t\t\t\t\tYou have exceeded the maximum number of login attempts.\n\t\t\t\t\t\tredirecting to the main page...." << endl;
-                        showLoadingBar(duration, delay);
-
-                    }
-                    cin.ignore();
-                    cin.ignore();
-                }
-            }
-
-            break;
-        }
-
-        case '5':
-            cout << "\nGoodbye!" << endl;
-            return 0;
-        default:
-
-            cout << "\nInvalid choice.\n" << endl;
-            system("Pause");
-            break;
-        }
-
-    } while (choice != 5);
-
-    system("Pause");
-    return 0;
+    cout << "\n\n\t\t\t\t\t\t  Registration successful!" << endl;
+    cout << "\n\t\t\t\t\t  [press any key to go back to main menu]" << endl;
 }
 
 
 
-//ree's functions definitions
+bool loginUser() {
+
+    cout << "\t  _,                           _     " << endl;
+    cout << "\t.'  `.                 ,___.>'',' - .. - .   " << endl;
+    cout << "\t`-.   ;           .--'-        . - ._@;      " << endl;
+    cout << "\t   ;  !_.--..._ .'      /     .[_@'`'.       " << endl;
+    cout << "\t  ;            /       : .'  ; :_.._  `.         __           __ __" << endl;
+    cout << "\t   :           ;        ;[   _T-;  `.'-. `-.    / /_   ___   / // /____     __  __ _____ ___   _____" << endl;
+    cout << "\t   \\        .-:      ; `.`-=_,88p.   _.}.-'    / __ \\ / _ \\ / // // __ \\   / / / // ___// _ \\ / ___/" << endl;
+    cout << "\t    `-.__.-'   \\    /L._ Y', P$T888;  ""        / / / //  __// // // /_/ /  / /_/ /(__  )/  __// /    " << endl;
+    cout << "\t             .-'_.-'  / ;$$$$$$]8P;          /_/ /_/ \\___//_//_/ \\____/   \\__,_//____/ \\___//_/     " << endl;
+    cout << "\t             \\ /     / / 'Y$$P' ^,'         " << endl;
+    cout << "\t              ;\\_    `.\\_._                " << endl;
+    cout << "\t              ]__\\     \\___;                  " << endl;
+    cout << "\n\n\t------------------------------------------------------------------------------------------------------------------ " << endl;
+    cout << "\t-------------------------------------------------[login now]------------------------------------------------------ " << endl;
+    cout << "\t------------------------------------------------------------------------------------------------------------------ " << endl;
+
+
+    string login_username, login_password;
+    cin.ignore();
+    cout << "\n\n\t\t\t\t\t\tplease enter your username: ";
+    getline(cin, login_username);
+    cout << endl;
+    cout << "\t\t\t\t\t\tplease enter your password: ";
+    getline(cin, login_password);
+    
+    for (int i = 0; i < numUsers; i++) {
+        if (users[i].username == login_username && users[i].password == login_password) {
+            cout << "\n\n\t\t\t\t\t\t  login successful! Welcome "<< users[i].username << endl;
+            cout << "\t\t\t\t\t\t  [press any key to go back to main menu]" << endl;
+            cin.ignore();
+
+            return true;
+        }
+    }
+    cout << "\n\n\t\t\t\t\t\tError: invalid username or password" << endl;
+    cout << "\n\n\t\t\t\t\t\tyou'll be redirected back to the main menu" << endl;
+
+    cin.ignore();
+
+    return false;
+}
+
+//loading bar
+const int duration = 5; // total duration of the loading bar in seconds
+const int delay = 100; // delay between progress updates in milliseconds
+
+
 
 //loading bar
 void showLoadingBar(int duration, int delay) {
@@ -383,7 +245,7 @@ bool adminLogin() {
     cin >> inputPassword;
     cout << endl;
 
-    if (inputUsername == username && inputPassword == password) {
+    if (inputUsername == admin_username && inputPassword == admin_password) {
         cout << "\n\t\t\t\t\t\tWelcome, admin!\n\t\t\t\t\t\tredirecting to admin menu" << endl;
         showLoadingBar(duration, delay);
 
@@ -421,13 +283,13 @@ void displayadminmenu() {
     cout << "\t----------------------------------------------------[admin menu]-------------------------------------------------- " << endl;
     cout << "\t------------------------------------------------------------------------------------------------------------------ " << endl;
 
-    cout << "\n\t\t\t\t\t\t\t1\tView Movies" << endl;
-    cout << "\t\t\t\t\t\t\t2\tPerform Update" << endl;
-    cout << "\t\t\t\t\t\t\t3\tCheck transactions and profit" << endl;
+    cout << "\t\t\t\t\t\t\t1\tPerform Update" << endl;
+    cout << "\t\t\t\t\t\t\t2\tCheck transactions and profit" << endl;
     cout << "\t\t\t\t\t\t\tPress any other number to exit " << endl;
-    
 
 }
+
+
 
 void displaymenu() {
 
@@ -464,134 +326,6 @@ void displaymenu() {
 }
 
 
-void registerUser() {
-
-    User newUser;
-    string name;
-
-
-    //register user banner
-    //cout << " \n\n\n\n\n\n\n\n\n" << endl;
-    cout << "\t              ( \\    " << endl;
-    cout << "\t   __         _)_\\_    " << endl;
-    cout << "\t  ' \\;---.-._S_____2_                               _        __    " << endl;
-    cout << "\t    /   / /_/       (______           _____ ___   ____ _ (_)_____ / /_ ___   _____" << endl;
-    cout << "\t __(  _;-'    =    =|____._'.__          / ___// _ \\ / __ `// // ___// __// _ \\ / ___/" << endl;
-    cout << "\t/   _/     _  @\\ _(@(      '--'.     / /   /  __// /_/ // /(__  )/ /_ /  __// /" << endl;
-    cout << "\t(_ /      /\\  _   =( ) ___     \\    /_/    \\___/ \\__, //_//____/ \\__/ \\___//_/" << endl;
-    cout << "\t  /      /\\ \\_ '.___'-.___~.    '\\           /____/   ____   ____  _      __" << endl;
-    cout << "\t /      /\\ \\__'--') '-.__c` \\    |                   / __ \\ / __ \\| | /| / /" << endl;
-    cout << "\t|     .'  )___'--'/  /`)     \\   /                   / / / // /_/ /| |/ |/ /" << endl;
-    cout << "\t|    |'-|    _|--'\\_(_/       '.'                  /_/ /_/ \\____/ |__/|__/" << endl;
-    cout << "\t|    |   \\_  -\\    " << endl;
-    cout << "\t\\   |     \\ /`)    " << endl;
-    cout << "\t  '._/       (_/     " << endl;
-    cout << "\n\t------------------------------------------------------------------------------------------------------------------ " << endl;
-    cout << "\t--------------------------------------------------[hello!]-------------------------------------------------------- " << endl;
-    cout << "\t------------------------------------------------------------------------------------------------------------------ " << endl;
-    cin.ignore();
-
-
-    cout << "\n\n\t\t\t\t\tPlease enter your name\t\t: ";
-    getline(cin, newUser.name);
-
-    cout << "\t\t\t\t\tPlease enter a username\t\t: ";
-    getline(cin, newUser.username);
-
-    cout << "\t\t\t\t\tPlease enter a password\t\t: ";
-    getline(cin, newUser.password);
-
-
-    cout << "\t\t\t\t\tPlease enter your phone number\t: ";
-    getline(cin, newUser.phone_number);
-
-    users.push_back(newUser);
-    //back_insert the data at the end of the vector
-
-    //saving the data of new user
-    ofstream file;
-    file.open("users.txt", ios::app);
-    file << newUser.name << "," << newUser.username << "," << newUser.password << "," << newUser.phone_number << "\n";
-    file.close();
-
-    cout << "\n\n\t\t\t\t\t\t  Registration successful!" << endl;
-    cout << "\n\t\t\t\t\t  press any key to go back to main menu" << endl;
-    cin.ignore();
-    //system("Pause");
-
-}
-
-bool loginUser() {
-
-    cout << "\t  _,                           _     " << endl;
-    cout << "\t.'  `.                 ,___.>'',' - .. - .   " << endl;
-    cout << "\t`-.   ;           .--'-        . - ._@;      " << endl;
-    cout << "\t   ;  !_.--..._ .'      /     .[_@'`'.       " << endl;
-    cout << "\t  ;            /       : .'  ; :_.._  `.         __           __ __" << endl;
-    cout << "\t   :           ;        ;[   _T-;  `.'-. `-.    / /_   ___   / // /____     __  __ _____ ___   _____" << endl;
-    cout << "\t   \\        .-:      ; `.`-=_,88p.   _.}.-'    / __ \\ / _ \\ / // // __ \\   / / / // ___// _ \\ / ___/" << endl;
-    cout << "\t    `-.__.-'   \\    /L._ Y', P$T888;  ""        / / / //  __// // // /_/ /  / /_/ /(__  )/  __// /    " << endl;
-    cout << "\t             .-'_.-'  / ;$$$$$$]8P;          /_/ /_/ \\___//_//_/ \\____/   \\__,_//____/ \\___//_/     " << endl;
-    cout << "\t             \\ /     / / 'Y$$P' ^,'         " << endl;
-    cout << "\t              ;\\_    `.\\_._                " << endl;
-    cout << "\t              ]__\\     \\___;                  " << endl;
-    cout << "\n\n\t------------------------------------------------------------------------------------------------------------------ " << endl;
-    cout << "\t-------------------------------------------------[login now]------------------------------------------------------ " << endl;
-    cout << "\t------------------------------------------------------------------------------------------------------------------ " << endl;
-
-    string username, password;
-    cin.ignore();
-    cout << "\n\n\t\t\t\t\t\tplease enter your username: ";
-    getline(cin, username);
-    cout << "\n\t\t\t\t\t\tplease enter your password: ";
-    getline(cin, password);
-
-    for (int i = 0; i < users.size(); i++) {
-        if (users[i].username == username && users[i].password == password) {
-            cout << "\n\t\t\t\t\t\t\t Welcome " << users[i].username << "!" << endl;
-            cout << "\n\t\t\t\t\t\tPress enter to continue...";
-            cin.ignore();
-            return true;
-        }
-    }
-
-
-    cin.ignore();
-    return false;
-}
-
-
-void loadUsersFromFile() {
-    ifstream file("users.txt");
-    string line;
-    while (getline(file, line)) {
-        User user;
-        size_t pos = 0;
-        string token;
-        int i = 0;
-        while ((pos = line.find(",")) != string::npos) {
-            token = line.substr(0, pos);
-            line.erase(0, pos + 1);
-            switch (i) {
-            case 0:
-                user.name = token;
-                break;
-            case 1:
-                user.username = token;
-                break;
-            case 2:
-                user.password = token;
-                break;
-            case 3:
-                user.phone_number = token;
-                break;
-            }
-            i++;
-        }
-        users.push_back(user);
-    }
-
-}
 
 void displayloginmenu() {
     //banner
@@ -667,9 +401,214 @@ void displayloginmenu() {
         break;
     }
     system("Pause");
+
+
+
 }
 
+//joseph's part: functions prototypes
+bool check_exist (string name, string moviesOS[]);
+int null_index(string moviesOS[]);
+void set_movieOS(Movie movies[], string moviesOS[]);
+bool compare(const Movie &a, const Movie &b);
+int check_index(Movie movies[]);
+int starting_index(Movie movies[]);
+void movie_details(string moviesOS[],Movie movies[]);
+void update(Movie movies[],string movieOS[]);
 
+
+
+
+int main() {
+    
+    //joseph: read in movies.txt and arrange before anything else
+    Movie movies[Size] = {};
+    string moviesOS[Size] = {};
+    ifstream inMovies("movies.txt");
+
+    //read in movies.txt
+    if (inMovies.is_open()){
+        int i = 0;
+        
+        while (!inMovies.eof()){
+            getline(inMovies,movies[i].name);
+            inMovies >> movies[i].time;
+            inMovies.ignore();
+            getline(inMovies,movies[i].location);
+            inMovies.ignore();
+            i++;
+        }
+        inMovies.close();
+    }
+    else
+        cout << "Unable to open movies.txt!";
+
+    //sort the movies array ascendingly according to time
+    sort(movies, movies + Size, compare);
+    
+    
+    
+    
+    
+    //ree's part
+    char choice;
+    int admin_choice;
+    //loadUsersFromFile();
+    bool isLoggedIn = false;
+    bool validInput = false;
+    do {
+        system("CLS");
+        displaymenu();
+        cout << "\n\t\t\t\t\t\tenter your choice: ";
+        cin >> choice;
+
+
+
+        switch (choice) {
+        case '1':
+            system("CLS");
+            registerUser();
+            cin.ignore();
+            break;
+        case '2':
+            if (!isLoggedIn) {
+                system("CLS");
+                isLoggedIn = loginUser();
+            }
+            else {
+                cout << "\n\tYou are already logged in" << endl;
+                cout << "\tRedirecting you to the user menu...\n" << endl;
+
+                showLoadingBar(duration, delay);
+
+                cin.ignore();
+                system("CLS");
+                displayloginmenu();
+
+            }
+            break;
+
+        case '3':
+        {
+            char logout;
+
+            if (!isLoggedIn) {
+                cout << "\n\tYou're not logged in\n\tPress enter to go back to the main menu" << endl;
+                cin.ignore();
+                cin.ignore();
+                displaymenu();
+                break;
+            }
+            cout << "\tLog out?" << endl;
+            cout << "\n\tPress 'Y' to logout" << endl;
+            cout << "\n\tPress any other key to go back to the main screen" << endl;
+            cout << "\t:";
+            cin >> logout;
+            if (logout == 'Y' || logout == 'y') {
+                isLoggedIn = false;
+                cout << "\n\tYou have successfully logged out of the system\n\tPress enter to go back to the main menu" << endl;
+                cin.ignore();
+                cin.ignore();
+                displaymenu();
+
+            }
+            else {
+                cout << "\n\tYou're still logged in\n\tPress enter to go back to the main menu" << endl;
+                cin.ignore();
+                cin.ignore();
+            }
+            break;
+        }
+
+        case '4':
+        {
+            ////admin login
+            int max_attempts = 3;
+            int attempts = 0;
+            bool login_successful = false;
+
+            while (attempts < max_attempts && !login_successful) {
+                system("CLS");
+                if (adminLogin()) {
+                    login_successful = true;
+                    displayadminmenu();
+                    
+                    cout << "\n\t\t\t\t\t\tEnter your choice: ";
+                    cin >> admin_choice;
+                    cout << endl << endl;
+                    
+                    while (admin_choice >= 1 && admin_choice <= 2){
+                       
+                        if (admin_choice == 1){
+                            
+                            //display movie list as reference
+                            movie_details(moviesOS, movies);
+                            
+                            //start of admin update menu
+                            update(movies,moviesOS);
+                            
+                            //update movies.txt
+                            ofstream outFile ("movies.txt", ios::out);
+                            
+                            for (int i = starting_index(movies); i < Size; i ++){
+                                outFile << movies[i].name << endl;
+                                outFile << movies[i].time << " " << movies[i].location << endl << endl;
+                            }
+                            
+                            outFile.close();
+                            
+                            
+                            //Display updated movie table
+                            cout << "The new movie table:\n\n";
+                            movie_details(moviesOS, movies);
+                            cout << "Changes are successfully updated." << endl;
+                            
+                        }
+                        else if (admin_choice == 2)
+                            cout << "William, hurry ...";
+                        
+                        
+                        cout << "\n\t\t\t\t\t  press any key to go back to admin update interface...";
+                        cin.ignore();
+                        displayadminmenu();
+                        cout << "\n\t\t\t\t\t\tEnter your choice: ";
+                        cin >> admin_choice;
+                    }
+                }
+                else {
+                    attempts++;
+                    cout << "\n\t\t\t\t\t\tIncorrect login credentials. Attempts remaining: " << max_attempts - attempts << endl;
+                    if (attempts < 3) {
+                        cout << "\n\t\t\t\t\t\tPress any key to try again..." << endl;
+                    }
+                    else {
+                        cout << "\n\t\t\t\t\t\tYou have exceeded the maximum number of login attempts.\n\t\t\t\t\t\tredirecting to the main page...." << endl;
+                        showLoadingBar(duration, delay);
+
+                    }
+                    cin.ignore();
+                    cin.ignore();
+                }
+            }
+
+            break;
+        }
+
+        case '5':
+            cout << "\nGoodbye!" << endl;
+            return 0;
+        default:
+
+            cout << "\nInvalid choice.\n" << endl;
+            system("Pause");
+            break;
+        }
+
+    } while (choice != 5);
+
+    system("Pause");
+    return 0;
+}
 
 
 //joseph's function definitions
